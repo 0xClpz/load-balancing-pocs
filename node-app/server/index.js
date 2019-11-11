@@ -2,10 +2,11 @@ const app = require('express')()
 
 const emojis = ["🔥", "😂", "⚡️", "🎉", "😏", "🎃", "🥖", "🍉"]
 
-const randomServerId = emojis[Math.floor(Math.random() * emojis.length)]
+const randomServerId = () => emojis[Math.floor(Math.random() * emojis.length)]
 
+const serverID = `Server ID: ${randomServerId()}${randomServerId()}`
 app.get('/', (req, res) => {
-  res.json({foo: randomServerId})
+  res.send(serverID)
 })
 
 app.listen(8080, () => {

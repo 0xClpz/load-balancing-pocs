@@ -37,11 +37,62 @@ cat <<EOF > ~/.docker/config.json
 }
 EOF
 
-(crontab -l 2>/dev/null; echo "* * * * * cd /home/ubuntu && /usr/local/bin/docker-compose pull && /usr/local/bin/docker-compose up -d") | crontab -
-
 cat <<EOF > docker-compose.yml
 node-app:
   image: 733047563139.dkr.ecr.eu-west-2.amazonaws.com/node-app:latest
+  labels:
+    - 'traefik.enable=true'
+    - 'traefik.basic.frontend.rule=Host:node-app.tamere.online'
+    - 'traefik.basic.port=8080'
+    - 'traefik.basic.protocol=http'
+traefik:
+  image: traefik:1.7
+  restart: always
   ports:
-    - 80:8080
+    - 80:80
+    - 443:443
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./traefik.toml:/traefik.toml
+    - ./acme.json:/acme.json
 EOF
+
+touch acme.json
+chmod 600 acme.json
+
+cat <<EOF > traefik.toml
+debug = false
+
+logLevel = "ERROR"
+defaultEntryPoints = ["https","http"]
+
+[entryPoints]
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+[retry]
+
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "shippr.io"
+watch = true
+exposedByDefault = false
+network = "default"
+
+[acme]
+email = "antonio.root@gmail.com"
+storage = "acme.json"
+entryPoint = "https"
+onHostRule = true
+
+[acme.tlsChallenge]
+EOF
+
+# Starts docker compose in a cron, pull and restart every minute
+# Continous deployment xD
+(crontab -l 2>/dev/null; echo "* * * * * cd /home/ubuntu && /usr/local/bin/docker-compose pull && /usr/local/bin/docker-compose up -d") | crontab -

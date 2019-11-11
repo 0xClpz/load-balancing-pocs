@@ -1,6 +1,6 @@
-//resource "aws_key_pair" "server_ssh_key" {
-//  public_key = file("./aws_key.pub")
-//}
+resource "aws_key_pair" "server_ssh_key" {
+  public_key = file("./aws_key.pub")
+}
 //
 //resource "aws_instance" "node_server" {
 //  ami = data.aws_ami.ubuntu.id
@@ -32,7 +32,11 @@ resource "aws_launch_configuration" "backend" {
 
   image_id                    = data.aws_ami.ubuntu.id
   instance_type               = local.instance_type
-  security_groups             = [aws_security_group.allow_http.id]
+  security_groups             = [aws_security_group.allow_http.id, aws_security_group.allow_ssh.id]
+
+  iam_instance_profile = aws_iam_instance_profile.autoscaling-group-instance-profile.name
+
+  key_name = aws_key_pair.server_ssh_key.key_name
 
   lifecycle {
     create_before_destroy = true

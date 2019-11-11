@@ -1,25 +1,6 @@
 resource "aws_key_pair" "server_ssh_key" {
   public_key = file("./aws_key.pub")
 }
-//
-//resource "aws_instance" "node_server" {
-//  ami = data.aws_ami.ubuntu.id
-//  instance_type = local.instance_type
-//
-//  key_name = aws_key_pair.server_ssh_key.key_name
-//
-//  subnet_id = local.subnet_a_id
-//
-//  vpc_security_group_ids = [aws_security_group.allow_http.id, aws_security_group.allow_tls.id, aws_security_group.allow_ssh.id]
-//
-//  iam_instance_profile = aws_iam_instance_profile.autoscaling-group-instance-profile.name
-//}
-
-//resource "aws_eip_association" "EIP_association" {
-//  allocation_id = aws_eip.EIP_ASG.id
-//  instance_id = aws_instance.node_server.id
-//}
-
 
 resource "aws_launch_configuration" "backend" {
   # Launch Configurations cannot be updated after creation with the AWS API.
